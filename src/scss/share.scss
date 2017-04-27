@@ -16,11 +16,20 @@
 	}
 
 	.#{$classname}__action {
+		box-sizing: border-box;
 		float: left;
+		width: $o-share-icon-size;
+		height: $o-share-icon-size;
 		margin: 0 5px 0 0;
 		list-style-type: none;
 		line-height: $o-share-icon-size;
+		border: 1px solid rgba(oColorsGetColorFor('o-share-button-default', 'border'), 0.2);
+		border-radius: $o-normalise-border-radius;
 		cursor: pointer;
+
+		@include oGridRespondTo(S) {
+			margin-right: 10px;
+		}
 
 		i {
 			float: left;
@@ -29,23 +38,45 @@
 			height: $o-share-icon-size;
 			text-indent: $o-share-icon-size;
 			overflow: hidden;
-			border-radius: $o-share-icon-size;
+		}
+
+		a,
+		button {
+			display: block;
+			position: relative;
+			top: -1px;
+			left: -1px;
+			width: $o-share-icon-size;
+			height: $o-share-icon-size;
+			border: 0;
+			cursor: pointer;
+
+			// Increase the hit target to improve a11y
+			&:after {
+				position: absolute;
+				display: block;
+				content: '';
+				width: $o-share-icon-size + 5;
+				height: $o-share-icon-size + 5;
+				top: -2px;
+				left: -2px;
+
+				@include oGridRespondTo(S) {
+					width: $o-share-icon-size + 10px;
+					height: $o-share-icon-size + 10px;
+					top: -5px;
+					left: -5px;
+				}
+			}
 		}
 
 		a {
-			display: block;
-			width: $o-share-icon-size;
-			padding: 6px;
 			text-decoration: none;
-			overflow: hidden;
+		}
 
-			&:focus i {
-				box-shadow: 0 0 2px oColorsGetPaletteColor('black');
-			}
-
-			&:hover i {
-				opacity: 0.8;
-			}
+		button {
+			padding: 0;
+			background-color: transparent;
 		}
 
 		&:first-child a {
@@ -57,37 +88,34 @@
 /// Action link styles
 /// @param {String} $classname [o-share] - base class name
 @mixin oShareActionLink($classname: o-share) {
-	.#{$classname}__action--url {
+	.#{$classname}__action--link {
 		display: none;
-
-		i {
-			background-image: url(_oShareGetIconUrl(link));
-		}
 
 		input {
 			display: block;
-			margin: 6px;
+			margin: 8px;
 			border: 0;
-			border-radius: 2px;
 			padding: 5px 8px;
 			width: 140px;
 			font-size: 12px;
 			line-height: 14px;
+			border-radius: $o-normalise-border-radius;
 			box-shadow: 0 0 3px oColorsGetPaletteColor('grey-tint5');
 
 			// Removes the cross the clears the input in IE 10+
-			&::-ms-clear {
+			&::-ms-clear { // sass-lint:disable-line no-vendor-prefixes
 				display: none;
 			}
 		}
 	}
 
-	[data-o-share--js] .#{$classname}__action--url {
+	[data-o-share--js] .#{$classname}__action--link {
 		display: block;
 	}
 
-	.#{$classname}__action--url[aria-selected=true] {
+	.#{$classname}__action--link[aria-selected=true] {
 		position: relative;
+
 		a {
 			display: none;
 		}
@@ -96,24 +124,111 @@
 
 /// Icon
 ///
-/// @param {String} $name - Name of the icon
-/// @param {String} $classname [o-share] - base class name
-@mixin oShareActionIcon($name, $classname: o-share) {
-	.#{$classname}__action--#{$name} i {
-		background-image: url(_oShareGetIconUrl($name, $format: png) + "&width=" + _oShareStripUnits($o-share-icon-size));
-		// The weird value for rgba is to prevent Sass converting rgba(0,0,0,0) to 'transparent',
-		// which would cause the following line of css to be understood by ie7/8 and the svg to be downloaded
-		background: rgba(0, 0, 0, 0.0001) url(_oShareGetIconUrl($name)) center/100% no-repeat;
+/// @param {String}  $name - Name of the icon
+/// @param {String}  $classname [o-share] - base class name
+/// @param {Boolean} $hover [true] - whether to output the hover styles
+@mixin oShareActionIcon($icon-name, $classname: o-share, $hover: true) {
+	// sass-lint:disable-all
+	$scheme: "ftsocial-v#{$o-share-social-icons-version}";
+
+	@if ($icon-name == 'mail' or $icon-name == 'link') {
+		$scheme: "fticon-v#{$o-share-ft-icons-version}";
 	}
+
+	$service-url: "#{$o-share-image-service-base-url}/#{$o-share-image-service-version}/images/raw/#{$scheme}:#{$icon-name}";
+	$query: "?source=o-share";
+
+	$hover-color: oColorsGetColorFor('o-share-button-hover', background);
+
+	$hover-color: str-slice(ie-hex-str($hover-color), 4);
+	$tint: "&tint=%23#{$hover-color},%23#{$hover-color}";
+
+	// scss-lint:disable DuplicateProperty
+	.#{$classname}__action--#{$icon-name} i {
+		background-image: url($service-url + $query + "&format=svg");
+
+		// ie7/8 fallback. Uses the `\9` selector hack to target ie6-8.
+		// Hack is documented here: http://browserhacks.com/#hack-ab1bcc7b3a6544c99260f7608f8e845e
+		background-image: url($service-url + $query + "&format=png&width=#{$o-share-icon-size}")\9;
+
+		// Hack to load icon early to prevent FOIC on hover
+		&:after {
+			content: '';
+			background-image: url($service-url + $query + "&format=svg#{$tint}");
+			background-image: url($service-url + $query + "&format=png#{$tint}&width=#{$o-share-icon-size}")\9;
+		}
+	}
+
+	// Targets displays using any of Windows’ High Contrast Mode themes:
+	// target all high-contrast themes and force a white icon with black background
+	@media screen and (-ms-high-contrast: active) {
+		$hover-color: oColorsGetColorFor('o-share-button-inverse', background);
+
+		$hover-color: str-slice(ie-hex-str($hover-color), 4);
+		$tint: "&tint=%23#{$hover-color},%23#{$hover-color}";
+
+		.#{$classname}__action--#{$icon-name} i {
+			background-color: oColorsGetPaletteColor('black');
+			background-image: url($service-url + $query + "&format=svg#{$tint}");
+			background-image: url($service-url + $query + "&format=png#{$tint}&width=#{$o-share-icon-size}")\9;
+		}
+	}
+
+	.#{$classname}__action--#{$icon-name}:hover,
+	.#{$classname}__action--#{$icon-name}:focus {
+		border-color: oColorsGetColorFor('o-share-#{$icon-name}-color', background);
+		background-color: oColorsGetColorFor('o-share-#{$icon-name}-color', background);
+
+		i {
+			background-image: url($service-url + $query + "&format=svg#{$tint}");
+			background-image: url($service-url + $query + "&format=png#{$tint}&width=#{$o-share-icon-size}")\9;
+		}
+	}
+	// scss-lint:enable DuplicateProperty
 }
 
 @mixin oShareVertical($classname: o-share) {
 	.#{$classname}__action {
 		float: none;
-		margin: 0 0 5px;
-		&:first-child a {
-			padding-left: 6px;
-			padding-top: 0;
+		margin-bottom: 5px;
+	}
+}
+
+@mixin oShareInverse($classname: o-share) {
+	.#{$classname}--inverse {
+		.#{$classname}__action:not(:hover) {
+			border: 1px solid rgba(oColorsGetColorFor('o-share-button-inverse', 'border'), 0.5);
+		}
+
+		@each $icon-name in $_o-share-icons {
+			// sass-lint:disable-all
+			$scheme: "ftsocial-v#{$o-share-social-icons-version}";
+
+			@if ($icon-name == 'mail' or $icon-name == 'link') {
+				$scheme: "fticon-v#{$o-share-ft-icons-version}";
+			}
+
+			$service-url: "#{$o-share-image-service-base-url}/#{$o-share-image-service-version}/images/raw/#{$scheme}:#{$icon-name}";
+			$query: "?source=o-share";
+
+			$hover-color: oColorsGetColorFor('o-share-button-inverse', background);
+
+			$hover-color: str-slice(ie-hex-str($hover-color), 4);
+			$tint: "&tint=%23#{$hover-color},%23#{$hover-color}";
+
+			.#{$classname}__action--#{$icon-name} {
+				border-color: oColorsGetColorFor('o-share-#{$icon-name}-color', background);
+
+				i {
+					background-image: url($service-url + $query + "&format=svg#{$tint}");
+					background-image: url($service-url + $query + "&format=png#{$tint}&width=#{$o-share-icon-size}")\9;
+
+					// Force the background to be black in high-contrast mode
+					@media screen and (-ms-high-contrast: active) {
+						background-color: oColorsGetPaletteColor('black');
+					}
+				}
+			}
 		}
 	}
 }

@@ -1,22 +1,26 @@
 @import 'o-colors/main';
+@import 'o-grid/main';
+@import 'o-normalise/main';
 
-@import 'src/scss/color-use-cases';
 @import 'src/scss/variables';
+@import 'src/scss/color-use-cases';
 @import 'src/scss/functions';
 @import 'src/scss/share';
 @import 'src/scss/tooltip';
 
 @if (not $o-share-is-silent) {
-	@include oShareBase();
-	@include oShareActionLink();
-	@include oShareActionIcon(twitter);
-	@include oShareActionIcon(facebook);
-	@include oShareActionIcon(linkedin);
-	@include oShareActionIcon(googleplus);
-	@include oShareActionIcon(whatsapp);
-	@include oShareActionIcon(reddit);
-	@include oShareActionIcon(pinterest);
-	@include oShareTooltip();
+	@include oShareBase;
+
+	@include oShareActionLink;
+
+	// run through all the different icons available
+	@each $icon in $_o-share-icons {
+		@include oShareActionIcon($icon);
+	}
+
+	@include oShareTooltip;
+	@include oShareInverse;
+
 	.o-share--vertical {
 		@include oShareVertical();
 	}

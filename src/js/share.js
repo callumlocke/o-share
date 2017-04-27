@@ -4,13 +4,13 @@ const DomDelegate = require('ftdomdelegate');
 const TextCopyHelper = require('./TextCopyHelper');
 
 const socialUrls = {
-	twitter: "https://twitter.com/intent/tweet?url={{url}}&amp;text={{title}}&amp;related={{relatedTwitterAccounts}}&amp;via=FT",
-	facebook: "http://www.facebook.com/sharer.php?u={{url}}&amp;t={{title}}+|+{{titleExtra}}",
-	linkedin: "http://www.linkedin.com/shareArticle?mini=true&amp;url={{url}}&amp;title={{title}}+|+{{titleExtra}}&amp;summary={{summary}}&amp;source=Financial+Times",
+	twitter: "https://twitter.com/intent/tweet?url={{url}}&text={{title}}&related={{relatedTwitterAccounts}}&via=FT",
+	facebook: "http://www.facebook.com/sharer.php?u={{url}}&t={{title}}+%7C+{{titleExtra}}",
+	linkedin: "http://www.linkedin.com/shareArticle?mini=true&url={{url}}&title={{title}}+%7C+{{titleExtra}}&summary={{summary}}&source=Financial+Times",
 	googleplus: "https://plus.google.com/share?url={{url}}",
-	reddit: "http://reddit.com/submit?url={{url}}&amp;title={{title}}",
-	pinterest: "http://www.pinterest.com/pin/create/button/?url={{url}}&amp;description={{title}}",
-	url: "{{url}}"
+	pinterest: "http://www.pinterest.com/pin/create/button/?url={{url}}&description={{title}}",
+	whatsapp: "whatsapp://send?text={{title}}%20({{titleExtra}})%20-%20{{url}}",
+	link: "{{url}}"
 };
 
 /**
@@ -51,6 +51,8 @@ function Share(rootEl, config) {
 
 		if (oShare.rootEl.contains(actionEl) && actionEl.querySelector('a[href]')) {
 			ev.preventDefault();
+			ev.stopPropagation();
+
 			const url = actionEl.querySelector('a[href]').href;
 
 			dispatchCustomEvent('event', {
@@ -59,7 +61,7 @@ function Share(rootEl, config) {
 				button: actionEl.textContent.trim().toLowerCase()
 			}, 'oTracking');
 
-			if (actionEl.classList.contains('o-share__action--url')) {
+			if (actionEl.classList.contains('o-share__action--link')) {
 				copyLink(url, actionEl);
 			} else {
 				shareSocial(url);
@@ -147,6 +149,8 @@ function Share(rootEl, config) {
 	  * @private
 	  */
 	function render() {
+		normaliseConfig();
+
 		const ulElement = document.createElement('ul');
 		for (let i = 0; i < config.links.length; i++) {
 			const liElement = document.createElement('li');
@@ -158,6 +162,18 @@ function Share(rootEl, config) {
 			ulElement.appendChild(liElement);
 		}
 		oShare.rootEl.appendChild(ulElement);
+	}
+
+	/**
+	  * Normalises any data in the configuration, converting relative URLs to ready-to-share
+	  * absolute versions
+	  *
+	  * @private
+	  */
+	function normaliseConfig() {
+		const link = document.createElement('a');
+		link.href = config.url;
+		config.url = link.protocol + '//' + link.host + link.pathname + link.search + link.hash;
 	}
 
 	/**
@@ -221,35 +237,17 @@ Share.prototype.destroy = function() {
   * @param {(HTMLElement|string)} [el=document.body] - Element where to search for o-share components. You can pass an HTMLElement or a selector string
   * @returns {Array} - An array of Share instances
   */
-Share.init = function(el) {
-	const shareInstances = [];
-
-	if (!el) {
-		el = document.body;
-	} else if (!(el instanceof HTMLElement)) {
-		el = document.querySelector(el);
+Share.init = function(rootEl) {
+	if (!rootEl) {
+		rootEl = document.body;
 	}
-
-	const shareElements = el.querySelectorAll('[data-o-component=o-share]');
-
-	for (let i = 0; i < shareElements.length; i++) {
-		if (!shareElements[i].hasAttribute('data-o-header--js')) {
-			shareInstances.push(new Share(shareElements[i]));
-		}
+	if (!(rootEl instanceof HTMLElement)) {
+		rootEl = document.querySelector(rootEl);
 	}
-
-	return shareInstances;
+	if (rootEl instanceof HTMLElement && rootEl.matches('[data-o-component=o-share]')) {
+		return new Share(rootEl);
+	}
+	return Array.from(rootEl.querySelectorAll('[data-o-component=o-share]'), rootEl => new Share(rootEl) );
 };
-
-const OSharePrototype = Object.create(HTMLElement.prototype);
-
-/**
-  * If it supports custom elements, it will return an instance of the <o-share> HTMLElement
-  *
-  * @returns {(HTMLElement|undefined)}
-  */
-Share.Element = document.registerElement ? document.registerElement('o-share', {
-	prototype: OSharePrototype
-}) : undefined;
 
 module.exports = Share;

@@ -1,6 +1,7 @@
 {
 	"description": "Share module",
 	"origamiType": "module",
+	"origamiCategory": "components",
 	"origamiVersion": 1,
 	"support": "https://github.com/Financial-Times/o-share/issues",
 	"supportStatus": "active",
@@ -26,23 +27,27 @@
 	"demos": [
 		{
 			"name": "horizontal",
-			"template": "main.mustache",
+			"template": "demos/src/main.mustache",
 			"data": "demos/src/data.json",
-			"expanded": true,
 			"description": "horizontal"
 		},
 		{
+			"name": "inverse",
+			"template": "demos/src/inverse.mustache",
+			"data": "demos/src/data.json",
+			"description": "inverse share icons"
+		},
+		{
 			"name": "vertical",
-			"template": "main.mustache",
+			"template": "demos/src/main.mustache",
 			"data": "demos/src/data-vertical.json",
-			"expanded": true,
 			"description": "vertical"
 		},
 		{
-			"name": "web-component",
-			"template": "demos/src/webcomponent.mustache",
-			"expanded": true,
-			"description": "web component"
+			"name": "pa11y",
+			"template": "demos/src/pa11y.mustache",
+			"data": "demos/src/data.json",
+			"hidden": true
 		}
 	]
 }
