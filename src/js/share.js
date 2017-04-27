@@ -1,7 +1,5 @@
-/**global require,module*/
-
-const DomDelegate = require('ftdomdelegate');
-const TextCopyHelper = require('./TextCopyHelper');
+import DomDelegate from 'ftdomdelegate';
+import TextCopyHelper from './TextCopyHelper';
 
 const socialUrls = {
 	twitter: "https://twitter.com/intent/tweet?url={{url}}&text={{title}}&related={{relatedTwitterAccounts}}&via=FT",
@@ -250,4 +248,4 @@ Share.init = function(rootEl) {
 	return Array.from(rootEl.querySelectorAll('[data-o-component=o-share]'), rootEl => new Share(rootEl) );
 };
 
-module.exports = Share;
+export default Share;

@@ -1,5 +1,3 @@
-/*global module*/
-
 /**
  * @class Tooltip
  *
@@ -56,4 +54,4 @@ Tooltip.prototype.destroy = function() {
 	this.tooltipEl = undefined;
 };
 
-module.exports = Tooltip;
+export default Tooltip;

@@ -1,7 +1,5 @@
-/*global require, module*/
-
-const DomDelegate = require('ftdomdelegate');
-const Tooltip = require('./Tooltip');
+import DomDelegate 'ftdomdelegate';
+import Tooltip './Tooltip';
 
 /**
  * Gets the width of a text by using a <canvas> element
@@ -125,4 +123,4 @@ TextCopyHelper.prototype.destroy = function() {
 };
 
 
-module.exports = TextCopyHelper;
+export default TextCopyHelper;
