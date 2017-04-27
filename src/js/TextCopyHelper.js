@@ -1,5 +1,5 @@
-import DomDelegate 'ftdomdelegate';
-import Tooltip './Tooltip';
+import DomDelegate from 'ftdomdelegate';
+import Tooltip from './Tooltip';
 
 /**
  * Gets the width of a text by using a <canvas> element
