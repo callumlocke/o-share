@@ -1,4 +1,4 @@
-import DomDelegate from 'ftdomdelegate';
+import DomDelegate from 'dom-delegate';
 import Tooltip from './Tooltip';
 
 /**
